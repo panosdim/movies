@@ -12,6 +12,7 @@
     var btnRegister = document.getElementById('btnRegister');
     var btnSearch = document.getElementById('btnSearch');
     var btnSignUp = document.getElementById('btnSignUp');
+    var btnUpdate = document.getElementById('btnUpdate');
     var frmLogin = document.getElementById('frmLogin');
     var frmRegister = document.getElementById('frmRegister');
     var inpSearch = document.getElementById('inpSearch');
@@ -59,7 +60,6 @@
                 welcome.style.display = '';
 
                 // Fetch watch list
-                updateWatchlist();
                 getWatchlist();
             } else {
                 newReleases();
@@ -130,7 +130,6 @@
                         welcome.style.display = '';
 
                         // Fetch watch list
-                        updateWatchlist();
                         getWatchlist();
                     }
                 } else {
@@ -163,6 +162,7 @@
                 welcome.style.display = 'none';
 
                 clearForm(frmLogin);
+                newReleases();
             } else {
                 // We reached our target server, but it returned an error
                 displayMessage({
@@ -237,7 +237,25 @@
     // Search
     btnSearch.addEventListener('click', function () {
         btnSearch.classList.add('is-loading');
-        search(inpSearch.value);
+
+        // If we have select something from autoComplete then we need to remove the date from the end
+        if (document.querySelector('div.autocomplete-suggestion.selected') != null) {
+            search(inpSearch.value.replace(/\(.*\)$/, ''));
+        } else {
+            search(inpSearch.value);
+        }
+    });
+    inpSearch.addEventListener('keypress', function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            // Search only if we don't have select anything from autoComplete
+            if (document.querySelector('div.autocomplete-suggestion.selected') == null) {
+                document.querySelector('div.autocomplete-suggestions').style.display = 'none';
+                btnSearch.classList.add('is-loading');
+                search(inpSearch.value);
+                return false;
+            }
+        }
+        return true;
     });
 
     // Clear Search Results
@@ -314,6 +332,12 @@
                 }
             };
         }
+    });
+
+    // Update release dates of undefined movies in watchlist
+    btnUpdate.addEventListener('click', function () {
+        displayMessage({'status': 'info', 'message': 'Update of release dates started'});
+        updateWatchlist();
     });
 
     // ----------------------------------------------
@@ -464,10 +488,20 @@
                     var mediaRight = HTMLElement;
                     var button = HTMLElement;
                     var box = HTMLElement;
+                    var grid = HTMLElement;
+                    var column = HTMLElement;
                     var date = "";
                     var tag = "";
 
                     for (var i = 0; i < resp.data.length; i++) {
+                        // Create grid
+                        grid = document.createElement('div');
+                        grid.classList.add('columns');
+
+                        // Create column
+                        column = document.createElement("div");
+                        column.classList.add('column', 'is-10', 'is-offset-1');
+
                         // Create box
                         box = document.createElement("div");
                         box.classList.add('box');
@@ -529,11 +563,17 @@
                         // Add media to box
                         box.appendChild(media);
 
+                        // Add box to column
+                        column.appendChild(box);
+
+                        // Add column to grid
+                        grid.insertBefore(column, grid.firstChild);
+
                         // Add to result list
                         if (tag == "is-danger") {
-                            lstMovies.appendChild(box);
+                            lstMovies.appendChild(grid);
                         } else {
-                            lstMovies.insertBefore(box, lstMovies.firstChild);
+                            lstMovies.insertBefore(grid, lstMovies.firstChild);
                         }
                     }
                 } else {
@@ -710,6 +750,7 @@
                 // Success!
                 resp = JSON.parse(this.responseText);
                 displayMessage(resp);
+                getWatchlist();
             } else {
                 // We reached our target server, but it returned an error
                 displayMessage({
