@@ -41,7 +41,6 @@ $context = stream_context_create($opts);
 
 // Get search results
 $results = file_get_contents("http://www.dvdsreleasedates.com/search.php", False, $context);
-//$results = file_get_contents("http://www.dvdsreleasedates.com/search.php");
 
 $dom = new DOMDocument();
 libxml_use_internal_errors(true);

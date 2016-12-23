@@ -44,7 +44,6 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
 
             // Get search results
             $results = file_get_contents("http://www.dvdsreleasedates.com/search.php", False, $context);
-            //$results = file_get_contents("http://www.dvdsreleasedates.com/search.php");
 
             $dom = new DOMDocument();
             libxml_use_internal_errors(true);
