@@ -11,6 +11,8 @@ if (!isset($_SESSION['userId'])) {
 }
 
 require_once 'database.php';
+ob_implicit_flush(true);
+ob_end_flush();
 
 // Find the movies of the specific user id with undefined release date
 $stmt = $db->prepare(
@@ -21,10 +23,20 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
     $query = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if ($query !== false) {
+        $nrMovies = count($query);
+        $i = $progress = 0;
+
         foreach ($query as $item) {
             /** @var $rel_date DateTime */
             $rel_date = null;
             $release_date = "0000-00-00";
+
+            // Calculate progress
+            $i++;
+            $progress = round(($i * 100) / $nrMovies);
+            echo json_encode([
+                "progress" => $progress
+            ]);
 
             // Create a stream
             $postdata = http_build_query([
@@ -107,12 +119,6 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
                 $stmt->execute([$release_date, $item['id']]);
             }
         }
-
-        // Successful update of release dates
-        echo json_encode([
-            "status"  => "success",
-            "message" => "Release date of movies updated successfully.",
-        ]);
     } else {
         // Error fetch results.
         echo json_encode([

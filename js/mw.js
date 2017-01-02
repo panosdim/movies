@@ -22,9 +22,11 @@
     var mdlSignUp = document.getElementById('mdlSignUp');
     var ntfMdlMessage = document.getElementById('ntfMdlMessage');
     var ntfMessage = document.getElementById('ntfMessage');
+    var prgUpdate = document.getElementById('prgUpdate');
     var sctResults = document.getElementById('sctResults');
     var sctMain = document.getElementById('sctMain');
     var sctNewReleases = document.getElementById('sctNewReleases');
+    var sctNotification = document.getElementById('sctNotification');
     var signUp = document.getElementById('signUp');
     var welcome = document.getElementById('welcome');
 
@@ -335,10 +337,7 @@
     });
 
     // Update release dates of undefined movies in watchlist
-    btnUpdate.addEventListener('click', function () {
-        displayMessage({'status': 'info', 'message': 'Update of release dates started'});
-        updateWatchlist();
-    });
+    btnUpdate.addEventListener('click', updateWatchlist);
 
     // ----------------------------------------------
     // Functions
@@ -437,14 +436,14 @@
         ntfMessage.innerHTML = result.message;
 
         // Show message
-        ntfMessage.style.display = '';
+        sctNotification.style.display = '';
 
         // Remove previous message
         clearTimeout(msgTimeout);
 
         // After 3 seconds, hide the notification
         msgTimeout = setTimeout(function () {
-            ntfMessage.style.display = 'none';
+            sctNotification.style.display = 'none';
         }, 3000);
     }
 
@@ -738,26 +737,62 @@
      * Update release date for movies that is not defined
      */
     function updateWatchlist() {
-        var ajax = new XMLHttpRequest();
-        ajax.open('POST', 'php/update.php', true);
-        ajax.send();
-        ajax.onload = function () {
-            /**
-             * @type {{status: string, message: string}} resp
-             */
-            var resp = {};
-            if (this.status >= 200 && this.status < 400) {
-                // Success!
-                resp = JSON.parse(this.responseText);
-                displayMessage(resp);
+        // var ajax = new XMLHttpRequest();
+        // ajax.open('POST', 'php/update.php', true);
+        // ajax.send();
+        // ajax.onload = function () {
+        //     /**
+        //      * @type {{status: string, message: string}} resp
+        //      */
+        //     var resp = {};
+        //     if (this.status >= 200 && this.status < 400) {
+        //         // Success!
+        //         resp = JSON.parse(this.responseText);
+        //         displayMessage(resp);
+        //         getWatchlist();
+        //     } else {
+        //         // We reached our target server, but it returned an error
+        //         displayMessage({
+        //             'status': 'error',
+        //             'message': 'Error contacting server.'
+        //         });
+        //     }
+        // };
+
+        // Display progress bar
+        prgUpdate.style.display = '';
+        btnUpdate.classList.add('is-loading');
+
+        var xhr = new XMLHttpRequest();
+        xhr.previous_text = '';
+        var new_response = '';
+        var result = {};
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                // Hide progress bar
+                prgUpdate.style.display = 'none';
+                btnUpdate.classList.remove('is-loading');
+                // Update watchlist
                 getWatchlist();
-            } else {
-                // We reached our target server, but it returned an error
-                displayMessage({
-                    'status': 'error',
-                    'message': 'Error contacting server.'
-                });
+            } else if (xhr.readyState == 3) {
+                // Remove previous text from response
+                new_response = xhr.responseText.substring(xhr.previous_text.length);
+                /**
+                 * @type {{progress: int}} result
+                 */
+                result = JSON.parse(new_response);
+
+                if (result.hasOwnProperty('progress')) {
+                    // Update progress bar
+                    prgUpdate.value = result.progress;
+                }
+
+                // Save text response as previous text
+                xhr.previous_text = xhr.responseText;
             }
         };
+        xhr.open("GET", "php/update.php", true);
+        xhr.send();
     }
 })();
