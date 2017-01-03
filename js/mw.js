@@ -737,62 +737,23 @@
      * Update release date for movies that is not defined
      */
     function updateWatchlist() {
-        // var ajax = new XMLHttpRequest();
-        // ajax.open('POST', 'php/update.php', true);
-        // ajax.send();
-        // ajax.onload = function () {
-        //     /**
-        //      * @type {{status: string, message: string}} resp
-        //      */
-        //     var resp = {};
-        //     if (this.status >= 200 && this.status < 400) {
-        //         // Success!
-        //         resp = JSON.parse(this.responseText);
-        //         displayMessage(resp);
-        //         getWatchlist();
-        //     } else {
-        //         // We reached our target server, but it returned an error
-        //         displayMessage({
-        //             'status': 'error',
-        //             'message': 'Error contacting server.'
-        //         });
-        //     }
-        // };
-
         // Display progress bar
+        prgUpdate.value = 0;
         prgUpdate.style.display = '';
         btnUpdate.classList.add('is-loading');
 
-        var xhr = new XMLHttpRequest();
-        xhr.previous_text = '';
-        var new_response = '';
-        var result = {};
+        //noinspection JSUnresolvedFunction
+        var evtSource = new EventSource("php/update.php");
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
+        evtSource.onmessage = function (e) {
+            if (e.data !== 'FINISHED') {
+                prgUpdate.value = e.data;
+            } else {
                 // Hide progress bar
+                evtSource.close();
                 prgUpdate.style.display = 'none';
                 btnUpdate.classList.remove('is-loading');
-                // Update watchlist
-                getWatchlist();
-            } else if (xhr.readyState == 3) {
-                // Remove previous text from response
-                new_response = xhr.responseText.substring(xhr.previous_text.length);
-                /**
-                 * @type {{progress: int}} result
-                 */
-                result = JSON.parse(new_response);
-
-                if (result.hasOwnProperty('progress')) {
-                    // Update progress bar
-                    prgUpdate.value = result.progress;
-                }
-
-                // Save text response as previous text
-                xhr.previous_text = xhr.responseText;
             }
-        };
-        xhr.open("GET", "php/update.php", true);
-        xhr.send();
+        }
     }
 })();

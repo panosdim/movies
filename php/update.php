@@ -3,16 +3,13 @@
 session_start();
 // If not Login exit
 if (!isset($_SESSION['userId'])) {
-    echo json_encode([
-        'status'  => 'error',
-        'message' => 'You are not logged in.'
-    ]);
     exit();
 }
 
+header('Content-Type: text/event-stream; charset=utf-8');
+header('Cache-Control: no-cache');
+
 require_once 'database.php';
-ob_implicit_flush(true);
-ob_end_flush();
 
 // Find the movies of the specific user id with undefined release date
 $stmt = $db->prepare(
@@ -34,9 +31,10 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
             // Calculate progress
             $i++;
             $progress = round(($i * 100) / $nrMovies);
-            echo json_encode([
-                "progress" => $progress
-            ]);
+            echo "data: $progress" . PHP_EOL;
+            echo PHP_EOL;
+            ob_flush();
+            flush();
 
             // Create a stream
             $postdata = http_build_query([
@@ -119,17 +117,10 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
                 $stmt->execute([$release_date, $item['id']]);
             }
         }
-    } else {
-        // Error fetch results.
-        echo json_encode([
-            "status"  => "error",
-            "message" => "Fail to retrieve results from DB. Try again later.",
-        ]);
     }
-} else {
-    // DB interaction was not successful. Inform user with message.
-    echo json_encode([
-        "status"  => "error",
-        "message" => "Problem executing statement in DB. Try again later.",
-    ]);
 }
+
+echo "data: FINISHED" . PHP_EOL;
+echo PHP_EOL;
+ob_flush();
+flush();
