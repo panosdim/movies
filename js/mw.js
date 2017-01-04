@@ -737,23 +737,59 @@
      * Update release date for movies that is not defined
      */
     function updateWatchlist() {
-        // Display progress bar
+        var pollTimeout;
         prgUpdate.value = 0;
         prgUpdate.style.display = '';
         btnUpdate.classList.add('is-loading');
 
-        //noinspection JSUnresolvedFunction
-        var evtSource = new EventSource("php/update.php");
-
-        evtSource.onmessage = function (e) {
-            if (e.data !== 'FINISHED') {
-                prgUpdate.value = e.data;
-            } else {
-                // Hide progress bar
-                evtSource.close();
+        var ajax = new XMLHttpRequest();
+        ajax.open('GET', 'php/update.php', true);
+        ajax.send();
+        ajax.onload = function () {
+            /**
+             * @type {{status: string, message: string}} resp
+             */
+            var resp = {};
+            if (this.status >= 200 && this.status < 400) {
+                // Success!
+                prgUpdate.value = 100;
+                clearTimeout(pollTimeout);
+                resp = JSON.parse(this.responseText);
                 prgUpdate.style.display = 'none';
                 btnUpdate.classList.remove('is-loading');
+                displayMessage(resp);
+                getWatchlist();
+            } else {
+                // We reached our target server, but it returned an error
+                displayMessage({
+                    'status': 'error',
+                    'message': 'Error contacting server.'
+                });
             }
-        }
+        };
+
+        (function poll() {
+            pollTimeout = setTimeout(function () {
+                var ajax = new XMLHttpRequest();
+                ajax.open('GET', 'php/progress.php', true);
+                ajax.send();
+                ajax.onload = function () {
+                    if (this.status >= 200 && this.status < 400) {
+                        // Success!
+                        //Update progress bar
+                        prgUpdate.value = this.responseText;
+
+                        //Setup the next poll recursively
+                        poll();
+                    } else {
+                        // We reached our target server, but it returned an error
+                        displayMessage({
+                            'status': 'error',
+                            'message': 'Error contacting server.'
+                        });
+                    }
+                };
+            }, 2000);
+        })();
     }
 })();
