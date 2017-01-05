@@ -47,7 +47,7 @@
     //-----------------------------------------------
 
     // Back to top button
-    subir('#top', 50, 10);
+    subir('#top', 10, 3);
 
     // Session check
     ajax.open('GET', 'php/session.php', true);
@@ -261,6 +261,8 @@
 
     // Search
     btnSearch.addEventListener('click', function () {
+        // Abort autocomplete search
+        ajax.abort();
         btnSearch.classList.add('is-loading');
         search(inpSearch.value);
     });
@@ -268,6 +270,7 @@
         if (event.which == 13 || event.keyCode == 13) {
             // Search only if we don't have select anything from autoComplete
             if (document.querySelector('div.autocomplete-suggestion.selected') == null) {
+                ajax.abort();
                 document.querySelector('div.autocomplete-suggestions').style.display = 'none';
                 btnSearch.classList.add('is-loading');
                 search(inpSearch.value);
@@ -293,6 +296,7 @@
             data.append('title', e.target.dataset.title);
             data.append('overview', e.target.dataset.overview);
             data.append('image', e.target.dataset.image);
+            data.append('year', e.target.dataset.year);
 
             ajax.open('POST', 'php/add.php', true);
             ajax.send(data);
@@ -715,7 +719,10 @@
                     title = document.createElement("div");
                     title.classList.add('content');
                     // Append a text node to the cell
-                    title.innerHTML = '<h1>' + resp.results[i].original_title + '</h1><br>' + resp.results[i].overview;
+                    title.innerHTML = '<p class="title is-3">' + resp.results[i].original_title + '</p>' +
+                        '<p class="subtitle is-5">' + resp.results[i].release_date + '</p>' +
+                        '<br>' +
+                        resp.results[i].overview;
                     content.appendChild(title);
 
                     // Create the add button
@@ -727,6 +734,7 @@
                     button.dataset.image = resp.results[i].poster_path;
                     button.dataset.title = resp.results[i].original_title;
                     button.dataset.overview = resp.results[i].overview;
+                    button.dataset.year = fecha.format(fecha.parse(resp.results[i].release_date, 'YYYY-MM-DD'), 'YYYY');
                     mediaRight.appendChild(button);
 
                     // Add all to media div

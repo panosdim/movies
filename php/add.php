@@ -15,13 +15,30 @@ require_once 'tmdb.php';
 
 // Define variables and set to empty values
 /** @var $rel_date DateTime */
-$title = $overview = $image = $rel_date = $movie_url = null;
+$title = $overview = $image = $rel_date = $movie_url = $year = null;
 $release_date = "0000-00-00";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = filter_input(INPUT_POST, "title", FILTER_SANITIZE_STRING);
     $overview = filter_input(INPUT_POST, "overview", FILTER_SANITIZE_STRING);
     $image = filter_input(INPUT_POST, "image", FILTER_SANITIZE_STRING);
+    $year = filter_input(INPUT_POST, "year", FILTER_SANITIZE_STRING);
+}
+
+// Check if movie already exists
+$stmt = $db->prepare(
+    'SELECT title FROM watchlist WHERE title = ?'
+);
+if ($stmt->execute([$title])) {
+    $query = $stmt->fetch();
+
+    if ($query !== false) {
+        echo json_encode([
+            "status"  => "info",
+            "message" => "Movie already exist in watchlist.",
+        ]);
+        exit();
+    }
 }
 
 if ($image == 'null') {
@@ -39,7 +56,7 @@ $dom->loadHTML($results);
 $xpath = new DOMXpath($dom);
 
 // Find movie URL from search results
-$elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[1]");
+$elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[. = {$year}]");
 if ($elements->length != 0) {
     $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
 

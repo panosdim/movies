@@ -2,6 +2,7 @@
 
 session_start();
 require_once 'database.php';
+require_once 'tmdb.php';
 
 // Define Helper functions
 define('ALGO', '$2a');
@@ -17,21 +18,12 @@ function create_hash($password)
     return crypt($password, ALGO . COST . '$' . unique_salt());
 }
 
-// Create a stream
-// TODO: Remove in production server
-$opts = [
-    'http' => [
-        'proxy'           => 'tcp://10.124.32.12:80',
-        'request_fulluri' => true
-    ]
-];
-$context = stream_context_create($opts);
-
+$captcha = null;
 $secret = '6LeGWg8UAAAAAEUP8XA6UGefxDgzttQ_ic8meQFX';
 if (isset($_POST['g-recaptcha-response']))
     $captcha = $_POST['g-recaptcha-response'];
 
-if (!$captcha) {
+if (is_null($captcha)) {
     echo json_encode([
         "status"  => "error",
         "message" => "Please check the captcha form"
@@ -39,7 +31,6 @@ if (!$captcha) {
     exit;
 }
 $response = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$captcha}", False, $context), true);
-//$response = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$captcha}"), true);
 
 if ($response['success'] == false) {
     echo json_encode([
