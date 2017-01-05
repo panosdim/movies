@@ -11,10 +11,11 @@ if (!isset($_SESSION['userId'])) {
 }
 
 require_once 'database.php';
+require_once 'tmdb.php';
 
 // Define variables and set to empty values
 /** @var $rel_date DateTime */
-$title = $overview = $image = $rel_date = null;
+$title = $overview = $image = $rel_date = $movie_url = null;
 $release_date = "0000-00-00";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -23,71 +24,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $image = filter_input(INPUT_POST, "image", FILTER_SANITIZE_STRING);
 }
 
-// Create a stream
-$postdata = http_build_query([
-    'searchStr' => $title
-]);
-// TODO: Remove PROXY in production server
-$opts = [
-    'http' => [
-        'method'          => 'POST',
-        'header'          => 'Content-type: application/x-www-form-urlencoded',
-        'content'         => $postdata,
-        'proxy'           => 'tcp://10.124.32.12:80',
-        'request_fulluri' => true
-    ]
-];
-$context = stream_context_create($opts);
+$term = urlencode($title);
 
 // Get search results
-$results = file_get_contents("http://www.dvdsreleasedates.com/search.php", False, $context);
+$results = file_get_contents("http://videoeta.com/search/?s={$term}", False, $context);
 
 $dom = new DOMDocument();
 libxml_use_internal_errors(true);
 $dom->loadHTML($results);
 $xpath = new DOMXpath($dom);
 
-// Get release date
-$elements = $xpath->query("//h2/span");
+// Find movie URL from search results
+$elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[1]");
 if ($elements->length != 0) {
-    foreach ($elements as $date) {
-        if (!preg_match("/(estimated|announced)/", $date->nodeValue)) {
+    $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
+
+    // Fetch movie data
+    $results = file_get_contents($movie_url, False, $context);
+
+    $dom->loadHTML($results);
+    $xpath = new DOMXpath($dom);
+
+    // Get release date
+    $elements = $xpath->query("//tr[@class='blu-ray' or @class='dvd']/td[@class='value']/a[1]");
+    if ($elements->length != 0) {
+        foreach ($elements as $date) {
             if (is_null($rel_date)) {
                 $rel_date = new DateTime($date->nodeValue);
             } else {
                 $tmp_date = new DateTime($date->nodeValue);
                 if ($rel_date->getTimestamp() > $tmp_date->getTimestamp()) {
                     $rel_date = $tmp_date;
-                }
-            }
-        }
-    }
-} else {
-    // Get URL to movie
-    $elements = $xpath->query("//td[@class='dvdcell']/a[1]");
-    if ($elements->length != 0) {
-        $movie_url = "http://www.dvdsreleasedates.com" . $elements->item(0)->getAttribute('href');
-
-        // Fetch movie data
-        $results = file_get_contents($movie_url, False, $context);
-        //$results = file_get_contents($movie_url);
-
-        $dom->loadHTML($results);
-        $xpath = new DOMXpath($dom);
-    }
-
-    // Get release date
-    $elements = $xpath->query("//h2/span");
-    if ($elements->length != 0) {
-        foreach ($elements as $date) {
-            if (!preg_match("/(estimated|announced)/", $date->nodeValue)) {
-                if (is_null($rel_date)) {
-                    $rel_date = new DateTime($date->nodeValue);
-                } else {
-                    $tmp_date = new DateTime($date->nodeValue);
-                    if ($rel_date->getTimestamp() > $tmp_date->getTimestamp()) {
-                        $rel_date = $tmp_date;
-                    }
                 }
             }
         }
@@ -100,10 +67,10 @@ if (!is_null($rel_date)) {
 
 // Insert movie in the table
 $stmt = $db->prepare(
-    'INSERT INTO `watchlist` (`user_id`, `title`, `overview`, `release_date`, `image`) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO `watchlist` (`user_id`, `title`, `overview`, `release_date`, `image`, `url`) VALUES (?, ?, ?, ?, ?, ?)'
 );
 
-if ($stmt->execute([$_SESSION['userId'], $title, $overview, $release_date, $image])) {
+if ($stmt->execute([$_SESSION['userId'], $title, $overview, $release_date, $image, $movie_url])) {
     echo json_encode([
         "status"  => "success",
         "message" => "Movie was added successfully.",

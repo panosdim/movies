@@ -3,10 +3,12 @@
     <properties>
       <sourceFilesUrls>
         <item url="file://$PROJECT_DIR$/js/mw.min.js" />
+        <item url="file://$PROJECT_DIR$/js/subir.min.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/js/mw.min.js" />
+      <root url="file://$PROJECT_DIR$/js/subir.min.js" />
     </CLASSES>
     <SOURCES />
   </library>

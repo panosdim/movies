@@ -32,6 +32,8 @@
 
     // Global Variables
     var ajax = new XMLHttpRequest();
+    // Base URL of TMBd images
+    var baseUrl = 'https://image.tmdb.org/t/p/';
     // Holds the previous timeout set from displayMessage function.
     var msgTimeout;
     /**
@@ -44,8 +46,11 @@
     // Initializations
     //-----------------------------------------------
 
+    // Back to top button
+    subir('#top', 50, 10);
+
     // Session check
-    ajax.open('POST', 'php/session.php', true);
+    ajax.open('GET', 'php/session.php', true);
     ajax.send();
     ajax.onload = function () {
         if (this.status >= 200 && this.status < 400) {
@@ -78,7 +83,10 @@
     new autoComplete({
         selector: inpSearch,
         source: function (term, response) {
-            var ajax = new XMLHttpRequest();
+            try {
+                ajax.abort();
+            } catch (e) {
+            }
             ajax.open('POST', 'php/autocomplete.php', true);
             ajax.send(JSON.stringify(term));
             ajax.onload = function () {
@@ -94,9 +102,24 @@
                 }
             };
         },
-        onSelect: function (e, term) {
+        renderItem: function (item, search) {
+            search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
+            var img = '<i class="fa fa-picture-o no_image_holder w45_and_h67" aria-hidden="true"></i>';
+            if (item[2] !== null) {
+                img = '<img width="45" height="67" src="' + item[2] + '">';
+            }
+            return '<div class="autocomplete-suggestion media" data-title="' + item[0] + '">' +
+                '<figure class="image media-left">' + img + '</figure>' +
+                '<div class="media-content"><div class="content">' +
+                '<h4 class="title is-4">' + item[0].replace(re, "<b>$1</b>") + '</h4>' +
+                '<h5 class="subtitle is-5">' + item[1] + '</h5>' +
+                '</div></div></div>';
+        },
+        onSelect: function (e, term, item) {
             btnSearch.classList.add('is-loading');
-            var query = term.replace(/\(.*\)$/, '');
+            inpSearch.value = item.getAttribute('data-title');
+            var query = item.getAttribute('data-title');
             search(query);
         }
     });
@@ -147,7 +170,7 @@
 
     // Logout
     btnLogout.addEventListener('click', function () {
-        ajax.open('POST', 'php/logout.php', true);
+        ajax.open('GET', 'php/logout.php', true);
         ajax.send();
         ajax.onload = function () {
             if (this.status >= 200 && this.status < 400) {
@@ -239,13 +262,7 @@
     // Search
     btnSearch.addEventListener('click', function () {
         btnSearch.classList.add('is-loading');
-
-        // If we have select something from autoComplete then we need to remove the date from the end
-        if (document.querySelector('div.autocomplete-suggestion.selected') != null) {
-            search(inpSearch.value.replace(/\(.*\)$/, ''));
-        } else {
-            search(inpSearch.value);
-        }
+        search(inpSearch.value);
     });
     inpSearch.addEventListener('keypress', function (event) {
         if (event.which == 13 || event.keyCode == 13) {
@@ -270,6 +287,7 @@
     // Add movie to watch list
     lstResults.addEventListener('click', function (e) {
         if (e.target && e.target.nodeName == "BUTTON") {
+            e.target.classList.add('is-loading');
             var ajax = new XMLHttpRequest();
             var data = new FormData();
             data.append('title', e.target.dataset.title);
@@ -285,6 +303,7 @@
                 var resp = {};
                 if (this.status >= 200 && this.status < 400) {
                     // Success!
+                    e.target.classList.remove('is-loading');
                     resp = JSON.parse(this.responseText);
                     if (resp.status == "success") {
                         sctResults.style.display = 'none';
@@ -457,7 +476,7 @@
         }
 
         var ajax = new XMLHttpRequest();
-        ajax.open('POST', 'php/get.php', true);
+        ajax.open('GET', 'php/get.php', true);
         ajax.send();
         ajax.onload = function () {
             /**
@@ -491,6 +510,7 @@
                     var column = HTMLElement;
                     var date = "";
                     var tag = "";
+                    var imageUrl = baseUrl + "w92";
 
                     for (var i = 0; i < resp.data.length; i++) {
                         // Create grid
@@ -514,7 +534,7 @@
                         figure.classList.add('media-left');
                         // Add image to figure
                         img = document.createElement("img");
-                        img.setAttribute('src', resp.data[i].image);
+                        img.setAttribute('src', imageUrl + resp.data[i].image);
                         figure.appendChild(img);
 
                         // Create content div
@@ -593,27 +613,24 @@
      */
     function newReleases() {
         var ajax = new XMLHttpRequest();
-        ajax.open('POST', 'php/newReleases.php', true);
+        ajax.open('GET', 'php/newReleases.php', true);
         ajax.send();
         ajax.onload = function () {
             /**
-             * @typedef {Object} response
-             * @property {{images: {base_url: string}}} conf
-             * @property {{results[]: {poster_path:string, original_title: string, overview: string}}} releases
-             * @type {response} resp
+             * @type {{results[]: {poster_path:string, original_title: string, overview: string}}} resp
              */
             var resp = {};
             if (this.status >= 200 && this.status < 400) {
                 // Success!
                 resp = JSON.parse(this.responseText);
-                var baseUrl = resp.conf.images.base_url + "w342";
+                var imageUrl = baseUrl + "w342";
 
                 // Find all card elements and populate them
                 var cards = sctNewReleases.querySelectorAll('.card');
                 for (var i = 0; i < cards.length; i++) {
-                    cards[i].getElementsByTagName('img')[0].setAttribute('src', baseUrl + resp.releases.results[i].poster_path);
-                    cards[i].getElementsByTagName('h2')[0].innerText = resp.releases.results[i].original_title;
-                    cards[i].getElementsByTagName('p')[0].innerText = resp.releases.results[i].overview;
+                    cards[i].getElementsByTagName('img')[0].setAttribute('src', imageUrl + resp.results[i].poster_path);
+                    cards[i].getElementsByTagName('h2')[0].innerText = resp.results[i].original_title;
+                    cards[i].getElementsByTagName('p')[0].innerText = resp.results[i].overview;
                 }
             } else {
                 // We reached our target server, but it returned an error
@@ -643,17 +660,14 @@
         ajax.send(JSON.stringify(query));
         ajax.onload = function () {
             /**
-             * @typedef {Object} response
-             * @property {{images: {base_url: string}}} conf
-             * @property {{movies[]: {poster_path:(string | null), original_title: string, overview: string}}} movies
-             * @type {response} resp
+             * @type {{results[]: {poster_path:(string | null), original_title: string, overview: string}}} resp
              */
             var resp = {};
 
             if (this.status >= 200 && this.status < 400) {
                 // Success!
                 resp = JSON.parse(this.responseText);
-                var baseUrl = resp.conf.images.base_url + "w92";
+                var imageUrl = baseUrl + "w92";
 
                 var figure = HTMLElement;
                 var content = HTMLElement;
@@ -664,11 +678,11 @@
                 var button = HTMLElement;
                 var box = HTMLElement;
 
-                if (resp.movies.results.length == 0) {
+                if (resp.results.length == 0) {
                     lstResults.innerHTML = '<h2>Nothing found. Please search again.</h2>';
                 }
 
-                for (var i = 0; i < resp.movies.results.length; i++) {
+                for (var i = 0; i < resp.results.length; i++) {
                     // Create box
                     box = document.createElement("div");
                     box.classList.add('box');
@@ -681,11 +695,12 @@
                     figure = document.createElement("figure");
                     figure.classList.add('media-left');
                     // Add image to figure
-                    img = document.createElement("img");
-                    if (resp.movies.results[i].poster_path !== null) {
-                        img.setAttribute('src', baseUrl + resp.movies.results[i].poster_path);
+                    if (resp.results[i].poster_path !== null) {
+                        img = document.createElement("img");
+                        img.setAttribute('src', imageUrl + resp.results[i].poster_path);
                     } else {
-                        img.setAttribute('src', 'images/default-placeholder.png');
+                        img = document.createElement("i");
+                        img.classList.add('fa', 'fa-picture-o', 'no_image_holder', 'w92_and_h138');
                     }
                     figure.appendChild(img);
 
@@ -695,7 +710,7 @@
                     title = document.createElement("div");
                     title.classList.add('content');
                     // Append a text node to the cell
-                    title.innerHTML = '<h1>' + resp.movies.results[i].original_title + '</h1><br>' + resp.movies.results[i].overview;
+                    title.innerHTML = '<h1>' + resp.results[i].original_title + '</h1><br>' + resp.results[i].overview;
                     content.appendChild(title);
 
                     // Create the add button
@@ -704,9 +719,9 @@
                     button = document.createElement("button");
                     button.classList.add('button', 'is-success');
                     button.innerText = 'Add to watchlist';
-                    button.dataset.image = img.getAttribute('src');
-                    button.dataset.title = resp.movies.results[i].original_title;
-                    button.dataset.overview = resp.movies.results[i].overview;
+                    button.dataset.image = resp.results[i].poster_path;
+                    button.dataset.title = resp.results[i].original_title;
+                    button.dataset.overview = resp.results[i].overview;
                     mediaRight.appendChild(button);
 
                     // Add all to media div

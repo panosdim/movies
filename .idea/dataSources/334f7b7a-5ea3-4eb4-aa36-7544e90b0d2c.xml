@@ -85,10 +85,14 @@
       <DataType>text|0</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="29" parent="14" name="user_id">
+    <column id="29" parent="14" name="url">
+      <Position>7</Position>
+      <DataType>text|0</DataType>
+    </column>
+    <index id="30" parent="14" name="user_id">
       <ColNames>user_id</ColNames>
     </index>
-    <key id="30" parent="14" name="PRIMARY">
+    <key id="31" parent="14" name="PRIMARY">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
