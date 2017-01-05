@@ -24,6 +24,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $image = filter_input(INPUT_POST, "image", FILTER_SANITIZE_STRING);
 }
 
+if ($image == 'null') {
+    $image = null;
+}
+
 $term = urlencode($title);
 
 // Get search results

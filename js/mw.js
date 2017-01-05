@@ -533,8 +533,13 @@
                         figure = document.createElement("figure");
                         figure.classList.add('media-left');
                         // Add image to figure
-                        img = document.createElement("img");
-                        img.setAttribute('src', imageUrl + resp.data[i].image);
+                        if (resp.data[i].image !== null) {
+                            img = document.createElement("img");
+                            img.setAttribute('src', imageUrl + resp.data[i].image);
+                        } else {
+                            img = document.createElement("i");
+                            img.classList.add('fa', 'fa-picture-o', 'no_image_holder', 'w92_and_h138');
+                        }
                         figure.appendChild(img);
 
                         // Create content div
