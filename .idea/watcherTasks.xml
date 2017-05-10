@@ -14,8 +14,8 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$USER_HOME$/node_modules/yuicompressor/build/yuicompressor-2.4.8.jar" />
-      <option name="scopeName" value="CSS" />
+      <option name="program" value="yuicompressor" />
+      <option name="scopeName" value="css" />
       <option name="trackOnlyRoot" value="true" />
       <option name="workingDir" value="$FileDir$" />
       <envs />
@@ -33,8 +33,8 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$USER_HOME$/AppData/Roaming/npm/uglifyjs.cmd" />
-      <option name="scopeName" value="JS" />
+      <option name="program" value="uglifyjs" />
+      <option name="scopeName" value="js" />
       <option name="trackOnlyRoot" value="true" />
       <option name="workingDir" value="$FileDir$" />
       <envs />

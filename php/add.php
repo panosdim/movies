@@ -45,7 +45,7 @@ if ($image == 'null') {
     $image = null;
 }
 
-$term = urlencode($title);
+$term = str_replace(" ", "+", html_entity_decode($title, ENT_QUOTES | ENT_HTML5));
 
 // Get search results
 $results = file_get_contents("http://videoeta.com/search/?s={$term}", False, $context);

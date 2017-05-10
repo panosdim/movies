@@ -3,8 +3,8 @@
 // Connect to MySQL server
 // TODO: Update with server settings
 define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_DSN', 'mysql:host=localhost;dbname=movies');
+define('DB_PASS', 'netrino');
+define('DB_DSN', 'mysql:host=localhost;dbname=stockroo_movies');
 
 // Create PDO object
 $db = new PDO(

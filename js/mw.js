@@ -12,6 +12,7 @@
     var btnRegister = document.getElementById('btnRegister');
     var btnSearch = document.getElementById('btnSearch');
     var btnSignUp = document.getElementById('btnSignUp');
+    var btnTop = document.getElementById("btnTop");
     var btnUpdate = document.getElementById('btnUpdate');
     var frmLogin = document.getElementById('frmLogin');
     var frmRegister = document.getElementById('frmRegister');
@@ -47,7 +48,13 @@
     //-----------------------------------------------
 
     // Back to top button
-    subir('#top', 10, 3);
+    window.onscroll = function() {
+        if (document.body.scrollTop > 750 || document.documentElement.scrollTop > 750) {
+            btnTop.style.display = "block";
+        } else {
+            btnTop.style.display = "none";
+        }
+    };
 
     // Session check
     ajax.open('GET', 'php/session.php', true);
@@ -105,7 +112,7 @@
         renderItem: function (item, search) {
             search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
-            var img = '<i class="fa fa-picture-o no_image_holder w45_and_h67" aria-hidden="true"></i>';
+            var img = '<i class="fa fa-picture-o no_image_holder search" aria-hidden="true"></i>';
             if (item[2] !== null) {
                 img = '<img width="45" height="67" src="' + item[2] + '">';
             }
@@ -267,9 +274,9 @@
         search(inpSearch.value);
     });
     inpSearch.addEventListener('keypress', function (event) {
-        if (event.which == 13 || event.keyCode == 13) {
+        if (event.which === 13 || event.keyCode === 13) {
             // Search only if we don't have select anything from autoComplete
-            if (document.querySelector('div.autocomplete-suggestion.selected') == null) {
+            if (document.querySelector('div.autocomplete-suggestion.selected') === null) {
                 ajax.abort();
                 document.querySelector('div.autocomplete-suggestions').style.display = 'none';
                 btnSearch.classList.add('is-loading');
@@ -289,7 +296,7 @@
 
     // Add movie to watch list
     lstResults.addEventListener('click', function (e) {
-        if (e.target && e.target.nodeName == "BUTTON") {
+        if (e.target && e.target.nodeName === "BUTTON") {
             e.target.classList.add('is-loading');
             var ajax = new XMLHttpRequest();
             var data = new FormData();
@@ -309,7 +316,7 @@
                     // Success!
                     e.target.classList.remove('is-loading');
                     resp = JSON.parse(this.responseText);
-                    if (resp.status == "success") {
+                    if (resp.status === "success") {
                         sctResults.style.display = 'none';
                         lstMovies.style.display = '';
                         inpSearch.value = '';
@@ -329,10 +336,11 @@
 
     // Delete movie from watchlist
     lstMovies.addEventListener('click', function (e) {
-        if (e.target && e.target.nodeName == "BUTTON") {
+        var btnDelete = e.target.closest("a.watched");
+        if (e.target && btnDelete) {
             var ajax = new XMLHttpRequest();
             var data = new FormData();
-            data.append('id', e.target.dataset.id);
+            data.append('id', btnDelete.dataset.id);
 
             ajax.open('POST', 'php/delete.php', true);
             ajax.send(data);
@@ -344,7 +352,7 @@
                 if (this.status >= 200 && this.status < 400) {
                     // Success!
                     resp = JSON.parse(this.responseText);
-                    if (resp.status == "success") {
+                    if (resp.status === "success") {
                         getWatchlist();
                     }
                     displayMessage(resp);
@@ -361,6 +369,12 @@
 
     // Update release dates of undefined movies in watchlist
     btnUpdate.addEventListener('click', updateWatchlist);
+
+    // Back to top
+    btnTop.addEventListener('click', function () {
+        document.body.scrollTop = 0; // For Chrome, Safari and Opera
+        document.documentElement.scrollTop = 0; // For IE and Firefox
+    });
 
     // ----------------------------------------------
     // Functions
@@ -501,58 +515,83 @@
                 // Success!
                 resp = JSON.parse(this.responseText);
 
-                if (resp.status == "success") {
-                    var figure = HTMLElement;
-                    var content = HTMLElement;
-                    var media = HTMLElement;
-                    var img = HTMLElement;
-                    var title = HTMLElement;
-                    var mediaRight = HTMLElement;
+                if (resp.status === "success") {
+                    var card = HTMLElement;
+                    var cardContent = HTMLElement;
+                    var cardImage = HTMLElement;
+                    var cardHeader = HTMLElement;
+                    var cardTitle = HTMLElement;
                     var button = HTMLElement;
-                    var box = HTMLElement;
+                    var releaseDate = HTMLElement;
+                    var figure = HTMLElement;
+                    var img = HTMLElement;
                     var grid = HTMLElement;
                     var column = HTMLElement;
                     var date = "";
                     var tag = "";
-                    var imageUrl = baseUrl + "w92";
+                    var imageUrl = baseUrl + "w185";
 
                     for (var i = 0; i < resp.data.length; i++) {
-                        // Create grid
-                        grid = document.createElement('div');
-                        grid.classList.add('columns');
+                        if (i % 6 === 0) {
+                            // Create grid
+                            grid = document.createElement('div');
+                            grid.classList.add('columns');
+                        }
 
                         // Create column
                         column = document.createElement("div");
-                        column.classList.add('column', 'is-10', 'is-offset-1');
+                        column.classList.add('column', 'is-2');
 
-                        // Create box
-                        box = document.createElement("div");
-                        box.classList.add('box');
+                        // Create card
+                        card = document.createElement("div");
+                        card.classList.add('card');
 
-                        // Create media div
-                        media = document.createElement("div");
-                        media.classList.add('media');
+                        // Create card image div
+                        cardImage = document.createElement("div");
+                        cardImage.classList.add('card-image');
+
+                        // Create the delete button
+                        button = document.createElement("a");
+                        button.classList.add('watched', 'button', 'is-danger');
+                        button.dataset.id = resp.data[i].id;
+                        button.innerHTML = '<span class="icon"><i class="fa fa-trash-o"></i></span>';
+                        card.appendChild(button);
 
                         // Create figure
                         figure = document.createElement("figure");
-                        figure.classList.add('media-left');
+                        figure.classList.add('image');
                         // Add image to figure
                         if (resp.data[i].image !== null) {
                             img = document.createElement("img");
                             img.setAttribute('src', imageUrl + resp.data[i].image);
                         } else {
                             img = document.createElement("i");
-                            img.classList.add('fa', 'fa-picture-o', 'no_image_holder', 'w92_and_h138');
+                            img.classList.add('fa', 'fa-picture-o', 'no_image_holder', 'card');
                         }
                         figure.appendChild(img);
 
+                        // Add figure to card-image
+                        cardImage.appendChild(figure);
+
+                        // Create card header
+                        cardHeader = document.createElement("header");
+                        cardHeader.classList.add('card-header');
+                        cardTitle = document.createElement("h6");
+                        cardTitle.classList.add('card-header-title');
+                        cardTitle.innerHTML = resp.data[i].title;
+
+                        // Add cardTitle to cardHeader
+                        cardHeader.appendChild(cardTitle);
+
                         // Create content div
-                        content = document.createElement("div");
-                        content.classList.add('media-content');
-                        title = document.createElement("div");
-                        title.classList.add('content');
+                        cardContent = document.createElement("div");
+                        cardContent.classList.add('card-content');
+
+                        // Create release date tag
+                        releaseDate = document.createElement("div");
+                        releaseDate.classList.add('has-text-centered');
                         // Check if we don't have a release date
-                        if (resp.data[i].release_date == "0000-00-00") {
+                        if (resp.data[i].release_date === "0000-00-00") {
                             date = "Not Defined";
                             tag = "is-danger";
                         } else {
@@ -568,40 +607,27 @@
                             }
                         }
                         // Append a text node to the cell
-                        title.innerHTML = '<h1>' + resp.data[i].title +
-                            '</h1><span class="tag is-medium ' + tag + '">' +
+                        releaseDate.innerHTML = '<span class="tag ' + tag + '">' +
                             date +
-                            '</span><br>' +
-                            resp.data[i].overview;
-                        content.appendChild(title);
+                            '</span>';
 
-                        // Create the delete button
-                        mediaRight = document.createElement("div");
-                        mediaRight.classList.add('media-right');
-                        button = document.createElement("button");
-                        button.classList.add('button', 'is-danger', 'delete');
-                        button.dataset.id = resp.data[i].id;
-                        mediaRight.appendChild(button);
+                        // Append level in card footer
+                        cardContent.appendChild(releaseDate);
 
-                        // Add all to media div
-                        media.appendChild(figure);
-                        media.appendChild(content);
-                        media.appendChild(mediaRight);
+                        // Add all to card
+                        card.appendChild(cardImage);
+                        card.appendChild(cardHeader);
+                        card.appendChild(cardContent);
 
-                        // Add media to box
-                        box.appendChild(media);
-
-                        // Add box to column
-                        column.appendChild(box);
+                        // Add card to column
+                        column.appendChild(card);
 
                         // Add column to grid
-                        grid.insertBefore(column, grid.firstChild);
+                        grid.appendChild(column);
 
                         // Add to result list
-                        if (tag == "is-danger") {
+                        if (i % 6 === 0) {
                             lstMovies.appendChild(grid);
-                        } else {
-                            lstMovies.insertBefore(grid, lstMovies.firstChild);
                         }
                     }
                 } else {
@@ -687,7 +713,7 @@
                 var button = HTMLElement;
                 var box = HTMLElement;
 
-                if (resp.results.length == 0) {
+                if (resp.results.length === 0) {
                     lstResults.innerHTML = '<h2>Nothing found. Please search again.</h2>';
                 }
 

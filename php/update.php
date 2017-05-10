@@ -63,7 +63,7 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
                     }
                 }
             } else {
-                $term = urlencode($item['title']);
+                $term = str_replace(" ", "+", html_entity_decode($title, ENT_QUOTES | ENT_HTML5));
 
                 // Get search results
                 $results = file_get_contents("http://videoeta.com/search/?s={$term}", False, $context);
