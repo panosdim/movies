@@ -57,6 +57,8 @@ $xpath = new DOMXpath($dom);
 
 // Find movie URL from search results
 $elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[. = {$year}]");
+if ($elements->length == 0)
+    $elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a");
 if ($elements->length != 0) {
     $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
 
