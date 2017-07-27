@@ -376,6 +376,34 @@
         document.documentElement.scrollTop = 0; // For IE and Firefox
     });
 
+    // Hide or show movies sections
+    document.addEventListener('click', function(e) {
+        var elm = e.target;
+        if (elm && elm.tagName.toLowerCase() === 'i' && elm.hasAttribute('caret')) {
+            var container = elm.parentNode.parentNode.parentNode;
+            if (container && container.tagName.toLowerCase() === 'div' && container.classList.contains('container')) {
+                var movies = container.querySelectorAll('div.columns');
+            }
+            var i = 0, len = movies.length;
+
+            if (elm.classList.contains('fa-caret-down')) {
+                // Hide movies
+                for (; i < len; i++) {
+                    movies[i].style.display = 'none';
+                }
+                elm.classList.remove('fa-caret-down');
+                elm.classList.add('fa-caret-right');
+            } else {
+                // Show movies
+                for (; i < len; i++) {
+                    movies[i].style.display = '';
+                }
+                elm.classList.remove('fa-caret-right');
+                elm.classList.add('fa-caret-down');
+            }
+        }
+    });
+
     // ----------------------------------------------
     // Functions
     //-----------------------------------------------
@@ -516,21 +544,6 @@
                 resp = JSON.parse(this.responseText);
 
                 if (resp.status === "success") {
-                    var card = HTMLElement;
-                    var cardContent = HTMLElement;
-                    var cardImage = HTMLElement;
-                    var cardHeader = HTMLElement;
-                    var cardTitle = HTMLElement;
-                    var button = HTMLElement;
-                    var releaseDate = HTMLElement;
-                    var figure = HTMLElement;
-                    var img = HTMLElement;
-                    var grid = HTMLElement;
-                    var column = HTMLElement;
-                    var date = "";
-                    var tag = "";
-                    var imageUrl = baseUrl + "w185";
-
                     // Create sections
                     var sctReleased = HTMLElement;
                     var sctComing = HTMLElement;
@@ -562,13 +575,13 @@
 
                     hdrReleased = document.createElement('h1');
                     hdrReleased.classList.add('title');
-                    hdrReleased.innerHTML = 'Released on DVD';
+                    hdrReleased.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Released on DVD';
                     hdrComing = document.createElement('h1');
                     hdrComing.classList.add('title');
-                    hdrComing.innerHTML = 'Coming Soon';
+                    hdrComing.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Coming Soon';
                     hdrUnknown = document.createElement('h1');
                     hdrUnknown.classList.add('title');
-                    hdrUnknown.innerHTML = 'Unknown Release Date';
+                    hdrUnknown.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Unknown Release Date';
 
                     // Add title to container
                     cntReleased.appendChild(hdrReleased);
@@ -582,6 +595,22 @@
                     var nrReleased = 0;
                     var nrComing = 0;
                     var nrUnknown = 0;
+
+                    // Card Elements
+                    var card = HTMLElement;
+                    var cardContent = HTMLElement;
+                    var cardImage = HTMLElement;
+                    var cardHeader = HTMLElement;
+                    var cardTitle = HTMLElement;
+                    var button = HTMLElement;
+                    var releaseDate = HTMLElement;
+                    var figure = HTMLElement;
+                    var img = HTMLElement;
+                    var grid = HTMLElement;
+                    var column = HTMLElement;
+                    var date = "";
+                    var tag = "";
+                    var imageUrl = baseUrl + "w185";
 
                     for (var i = 0; i < resp.data.length; i++) {
                         var nrGrid = 0;
@@ -694,7 +723,7 @@
                             cntGrid.appendChild(grid);
                         }
                     }
-                    
+
                     // Update header titles
                     hdrReleased.innerHTML = hdrReleased.innerHTML + ' (' + nrReleased + ')';
                     hdrComing.innerHTML = hdrComing.innerHTML + ' (' + nrComing + ')';
@@ -709,6 +738,9 @@
                     lstMovies.appendChild(sctReleased);
                     lstMovies.appendChild(sctComing);
                     lstMovies.appendChild(sctUnknown);
+
+                    // Hide section with Unknown Release Date
+                    hdrUnknown.getElementsByTagName('i')[0].click();
                 } else {
                     displayMessage(resp);
                 }
