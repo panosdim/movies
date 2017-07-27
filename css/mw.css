@@ -29,14 +29,27 @@ i.no_image_holder.card {
     z-index: 999;
 }
 
-.card:hover :not(.watched){
-    opacity: 0.8;
+#lstMovies div.card {
+    height: 100%;
+}
+
+#lstMovies div.card-image {
+    height: 65%;
+}
+
+#lstMovies header.card-header {
+    height: 20%;
 }
 
 .watched {
     display: none;
 }
-.card:hover .watched {
+
+#lstMovies .card:hover :not(.watched){
+    opacity: 0.8;
+}
+
+#lstMovies .card:hover .watched {
     position: absolute;
     top: 50%;
     left: 50%;

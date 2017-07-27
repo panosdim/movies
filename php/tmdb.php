@@ -3,8 +3,11 @@
 // TODO: Remove in production server the proxy settings
 $opts = [
     'http' => [
-        'proxy'           => 'tcp://10.124.32.12:80',
         'request_fulluri' => true
+    ],
+    "ssl"=> [
+        "verify_peer"=>false,
+        "verify_peer_name"=>false,
     ]
 ];
 

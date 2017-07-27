@@ -1,4 +1,4 @@
-(function () {
+(function() {
     "use strict";
 
     // ----------------------------------------------
@@ -59,7 +59,7 @@
     // Session check
     ajax.open('GET', 'php/session.php', true);
     ajax.send();
-    ajax.onload = function () {
+    ajax.onload = function() {
         if (this.status >= 200 && this.status < 400) {
             // Success!
             user = JSON.parse(this.responseText);
@@ -89,14 +89,14 @@
 
     new autoComplete({
         selector: inpSearch,
-        source: function (term, response) {
+        source: function(term, response) {
             try {
                 ajax.abort();
             } catch (e) {
             }
             ajax.open('POST', 'php/autocomplete.php', true);
             ajax.send(JSON.stringify(term));
-            ajax.onload = function () {
+            ajax.onload = function() {
                 if (this.status >= 200 && this.status < 400) {
                     // Success!
                     response(JSON.parse(this.responseText));
@@ -109,7 +109,7 @@
                 }
             };
         },
-        renderItem: function (item, search) {
+        renderItem: function(item, search) {
             search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
             var img = '<i class="fa fa-picture-o no_image_holder search" aria-hidden="true"></i>';
@@ -123,7 +123,7 @@
                 '<h5 class="subtitle is-5">' + item[1] + '</h5>' +
                 '</div></div></div>';
         },
-        onSelect: function (e, term, item) {
+        onSelect: function(e, term, item) {
             btnSearch.classList.add('is-loading');
             inpSearch.value = item.getAttribute('data-title');
             var query = item.getAttribute('data-title');
@@ -136,14 +136,14 @@
     //-----------------------------------------------
 
     // Login
-    btnLogin.addEventListener('click', function (event) {
+    btnLogin.addEventListener('click', function(event) {
         event.preventDefault();
 
         if (checkFormValidity(frmLogin)) {
             ajax.open('POST', 'php/login.php', true);
 
             ajax.send(new FormData(frmLogin));
-            ajax.onload = function () {
+            ajax.onload = function() {
                 var resp = {};
                 if (this.status >= 200 && this.status < 400) {
                     // Success!
@@ -176,10 +176,10 @@
     });
 
     // Logout
-    btnLogout.addEventListener('click', function () {
+    btnLogout.addEventListener('click', function() {
         ajax.open('GET', 'php/logout.php', true);
         ajax.send();
-        ajax.onload = function () {
+        ajax.onload = function() {
             if (this.status >= 200 && this.status < 400) {
                 // Success!
                 displayMessage({
@@ -206,13 +206,13 @@
     });
 
     // Sign Up
-    btnSignUp.addEventListener('click', function () {
+    btnSignUp.addEventListener('click', function() {
         mdlSignUp.classList.add('is-active');
     });
 
     // Modal close
     var modalButtons = document.querySelectorAll('.modal-card-head .delete, .modal-card-foot .button');
-    var fnClose = function () {
+    var fnClose = function() {
         mdlSignUp.classList.remove('is-active');
     };
     for (var i = 0; i < modalButtons.length; i++) {
@@ -221,7 +221,7 @@
 
     // Register
     btnRegister.removeEventListener('click', fnClose);
-    btnRegister.addEventListener('click', function (event) {
+    btnRegister.addEventListener('click', function(event) {
         event.preventDefault();
         ntfMdlMessage.style.display = 'none';
 
@@ -239,7 +239,7 @@
             } else {
                 ajax.open('POST', 'php/register.php', true);
                 ajax.send(new FormData(frmRegister));
-                ajax.onload = function () {
+                ajax.onload = function() {
                     var resp = {};
                     if (this.status >= 200 && this.status < 400) {
                         // Success!
@@ -267,13 +267,13 @@
     });
 
     // Search
-    btnSearch.addEventListener('click', function () {
+    btnSearch.addEventListener('click', function() {
         // Abort autocomplete search
         ajax.abort();
         btnSearch.classList.add('is-loading');
         search(inpSearch.value);
     });
-    inpSearch.addEventListener('keypress', function (event) {
+    inpSearch.addEventListener('keypress', function(event) {
         if (event.which === 13 || event.keyCode === 13) {
             // Search only if we don't have select anything from autoComplete
             if (document.querySelector('div.autocomplete-suggestion.selected') === null) {
@@ -288,14 +288,14 @@
     });
 
     // Clear Search Results
-    btnClear.addEventListener('click', function () {
+    btnClear.addEventListener('click', function() {
         sctResults.style.display = 'none';
         lstMovies.style.display = '';
         inpSearch.value = '';
     });
 
     // Add movie to watch list
-    lstResults.addEventListener('click', function (e) {
+    lstResults.addEventListener('click', function(e) {
         if (e.target && e.target.nodeName === "BUTTON") {
             e.target.classList.add('is-loading');
             var ajax = new XMLHttpRequest();
@@ -307,7 +307,7 @@
 
             ajax.open('POST', 'php/add.php', true);
             ajax.send(data);
-            ajax.onload = function () {
+            ajax.onload = function() {
                 /**
                  * @type {{status: string, message: string}} resp
                  */
@@ -335,7 +335,7 @@
     });
 
     // Delete movie from watchlist
-    lstMovies.addEventListener('click', function (e) {
+    lstMovies.addEventListener('click', function(e) {
         var btnDelete = e.target.closest("a.watched");
         if (e.target && btnDelete) {
             var ajax = new XMLHttpRequest();
@@ -344,7 +344,7 @@
 
             ajax.open('POST', 'php/delete.php', true);
             ajax.send(data);
-            ajax.onload = function () {
+            ajax.onload = function() {
                 /**
                  * @type {{status: string, message: string}} resp
                  */
@@ -371,7 +371,7 @@
     btnUpdate.addEventListener('click', updateWatchlist);
 
     // Back to top
-    btnTop.addEventListener('click', function () {
+    btnTop.addEventListener('click', function() {
         document.body.scrollTop = 0; // For Chrome, Safari and Opera
         document.documentElement.scrollTop = 0; // For IE and Firefox
     });
@@ -479,7 +479,7 @@
         clearTimeout(msgTimeout);
 
         // After 3 seconds, hide the notification
-        msgTimeout = setTimeout(function () {
+        msgTimeout = setTimeout(function() {
             sctNotification.style.display = 'none';
         }, 3000);
     }
@@ -496,7 +496,7 @@
         var ajax = new XMLHttpRequest();
         ajax.open('GET', 'php/get.php', true);
         ajax.send();
-        ajax.onload = function () {
+        ajax.onload = function() {
             /**
              * @typedef {Object} Response
              * @property {string} status - Indicates the status of the operation.
@@ -531,8 +531,88 @@
                     var tag = "";
                     var imageUrl = baseUrl + "w185";
 
+                    // Create sections
+                    var sctReleased = HTMLElement;
+                    var sctComing = HTMLElement;
+                    var sctUnknown = HTMLElement;
+
+                    sctReleased = document.createElement('section');
+                    sctReleased.classList.add('section');
+                    sctComing = document.createElement('section');
+                    sctComing.classList.add('section');
+                    sctUnknown = document.createElement('section');
+                    sctUnknown.classList.add('section');
+
+                    // Create containers
+                    var cntReleased = HTMLElement;
+                    var cntComing = HTMLElement;
+                    var cntUnknown = HTMLElement;
+
+                    cntReleased = document.createElement('div');
+                    cntReleased.classList.add('container');
+                    cntComing = document.createElement('div');
+                    cntComing.classList.add('container');
+                    cntUnknown = document.createElement('div');
+                    cntUnknown.classList.add('container');
+
+                    // Create title
+                    var hdrReleased = HTMLElement;
+                    var hdrComing = HTMLElement;
+                    var hdrUnknown = HTMLElement;
+
+                    hdrReleased = document.createElement('h1');
+                    hdrReleased.classList.add('title');
+                    hdrReleased.innerHTML = 'Released on DVD';
+                    hdrComing = document.createElement('h1');
+                    hdrComing.classList.add('title');
+                    hdrComing.innerHTML = 'Coming Soon';
+                    hdrUnknown = document.createElement('h1');
+                    hdrUnknown.classList.add('title');
+                    hdrUnknown.innerHTML = 'Unknown Release Date';
+
+                    // Add title to container
+                    cntReleased.appendChild(hdrReleased);
+                    cntReleased.appendChild(document.createElement('hr'));
+                    cntComing.appendChild(hdrComing);
+                    cntComing.appendChild(document.createElement('hr'));
+                    cntUnknown.appendChild(hdrUnknown);
+                    cntUnknown.appendChild(document.createElement('hr'));
+
+                    // Counters for each section
+                    var nrReleased = 0;
+                    var nrComing = 0;
+                    var nrUnknown = 0;
+
                     for (var i = 0; i < resp.data.length; i++) {
-                        if (i % 6 === 0) {
+                        var nrGrid = 0;
+                        var cntGrid = undefined;
+
+                        // Check if we don't have a release date
+                        if (resp.data[i].release_date === "0000-00-00") {
+                            date = "Not Defined";
+                            tag = "is-danger";
+                            nrGrid = nrUnknown;
+                            nrUnknown++;
+                            cntGrid = cntUnknown;
+                        } else {
+                            // Convert release date to Date object
+                            var release_date = fecha.parse(resp.data[i].release_date, 'YYYY-MM-DD');
+                            // Check if it is released or not
+                            var today = new Date();
+                            date = fecha.format(release_date, 'DD MMMM YYYY');
+                            if (release_date.getTime() < today.getTime()) {
+                                tag = "is-success";
+                                nrGrid = nrReleased;
+                                nrReleased++;
+                                cntGrid = cntReleased;
+                            } else {
+                                tag = "is-warning";
+                                nrGrid = nrComing;
+                                nrComing++;
+                                cntGrid = cntComing;
+                            }
+                        }
+                        if (nrGrid % 6 === 0) {
                             // Create grid
                             grid = document.createElement('div');
                             grid.classList.add('columns');
@@ -590,22 +670,6 @@
                         // Create release date tag
                         releaseDate = document.createElement("div");
                         releaseDate.classList.add('has-text-centered');
-                        // Check if we don't have a release date
-                        if (resp.data[i].release_date === "0000-00-00") {
-                            date = "Not Defined";
-                            tag = "is-danger";
-                        } else {
-                            // Convert release date to Date object
-                            var release_date = fecha.parse(resp.data[i].release_date, 'YYYY-MM-DD');
-                            // Check if it is released or not
-                            var today = new Date();
-                            date = fecha.format(release_date, 'DD MMMM YYYY');
-                            if (release_date.getTime() < today.getTime()) {
-                                tag = "is-success";
-                            } else {
-                                tag = "is-warning";
-                            }
-                        }
                         // Append a text node to the cell
                         releaseDate.innerHTML = '<span class="tag ' + tag + '">' +
                             date +
@@ -626,10 +690,20 @@
                         grid.appendChild(column);
 
                         // Add to result list
-                        if (i % 6 === 0) {
-                            lstMovies.appendChild(grid);
+                        if (nrGrid % 6 === 0) {
+                            cntGrid.appendChild(grid);
                         }
                     }
+
+                    // Add Containers to sections
+                    sctReleased.appendChild(cntReleased);
+                    sctComing.appendChild(cntComing);
+                    sctUnknown.appendChild(cntUnknown);
+
+                    // Add sections to lstMovies
+                    lstMovies.appendChild(sctReleased);
+                    lstMovies.appendChild(sctComing);
+                    lstMovies.appendChild(sctUnknown);
                 } else {
                     displayMessage(resp);
                 }
@@ -650,7 +724,7 @@
         var ajax = new XMLHttpRequest();
         ajax.open('GET', 'php/newReleases.php', true);
         ajax.send();
-        ajax.onload = function () {
+        ajax.onload = function() {
             /**
              * @type {{results[]: {poster_path:string, original_title: string, overview: string}}} resp
              */
@@ -693,7 +767,7 @@
         var ajax = new XMLHttpRequest();
         ajax.open('POST', 'php/search.php', true);
         ajax.send(JSON.stringify(query));
-        ajax.onload = function () {
+        ajax.onload = function() {
             /**
              * @type {{results[]: {poster_path:(string | null), original_title: string, overview: string}}} resp
              */
@@ -760,6 +834,8 @@
                     button.dataset.image = resp.results[i].poster_path;
                     button.dataset.title = resp.results[i].original_title;
                     button.dataset.overview = resp.results[i].overview;
+                    if (resp.results[i].release_date == '')
+                        continue;
                     button.dataset.year = fecha.format(fecha.parse(resp.results[i].release_date, 'YYYY-MM-DD'), 'YYYY');
                     mediaRight.appendChild(button);
 
@@ -799,7 +875,7 @@
         var ajax = new XMLHttpRequest();
         ajax.open('GET', 'php/update.php', true);
         ajax.send();
-        ajax.onload = function () {
+        ajax.onload = function() {
             /**
              * @type {{status: string, message: string}} resp
              */
@@ -823,11 +899,11 @@
         };
 
         (function poll() {
-            pollTimeout = setTimeout(function () {
+            pollTimeout = setTimeout(function() {
                 var ajax = new XMLHttpRequest();
                 ajax.open('GET', 'php/progress.php', true);
                 ajax.send();
-                ajax.onload = function () {
+                ajax.onload = function() {
                     if (this.status >= 200 && this.status < 400) {
                         // Success!
                         //Update progress bar
