@@ -694,6 +694,11 @@
                             cntGrid.appendChild(grid);
                         }
                     }
+                    
+                    // Update header titles
+                    hdrReleased.innerHTML = hdrReleased.innerHTML + ' (' + nrReleased + ')';
+                    hdrComing.innerHTML = hdrComing.innerHTML + ' (' + nrComing + ')';
+                    hdrUnknown.innerHTML = hdrUnknown.innerHTML + ' (' + nrUnknown + ')';
 
                     // Add Containers to sections
                     sctReleased.appendChild(cntReleased);
