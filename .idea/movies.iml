@@ -6,5 +6,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="api" level="application" />
     <orderEntry type="library" name="api" level="application" />
+    <orderEntry type="library" name="0c6c96d4da" level="application" />
+    <orderEntry type="library" name="fecha-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="bower_components" level="project" />
   </component>
 </module>

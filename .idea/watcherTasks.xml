@@ -15,7 +15,7 @@
       </option>
       <option name="outputFromStdout" value="false" />
       <option name="program" value="yuicompressor" />
-      <option name="scopeName" value="css" />
+      <option name="scopeName" value="CSS" />
       <option name="trackOnlyRoot" value="true" />
       <option name="workingDir" value="$FileDir$" />
       <envs />
@@ -34,7 +34,7 @@
       </option>
       <option name="outputFromStdout" value="false" />
       <option name="program" value="uglifyjs" />
-      <option name="scopeName" value="js" />
+      <option name="scopeName" value="JS" />
       <option name="trackOnlyRoot" value="true" />
       <option name="workingDir" value="$FileDir$" />
       <envs />

@@ -545,9 +545,9 @@
 
                 if (resp.status === "success") {
                     // Create sections
-                    var sctReleased = HTMLElement;
-                    var sctComing = HTMLElement;
-                    var sctUnknown = HTMLElement;
+                    var sctReleased;
+                    var sctComing;
+                    var sctUnknown;
 
                     sctReleased = document.createElement('section');
                     sctReleased.classList.add('section');
@@ -557,9 +557,9 @@
                     sctUnknown.classList.add('section');
 
                     // Create containers
-                    var cntReleased = HTMLElement;
-                    var cntComing = HTMLElement;
-                    var cntUnknown = HTMLElement;
+                    var cntReleased;
+                    var cntComing;
+                    var cntUnknown;
 
                     cntReleased = document.createElement('div');
                     cntReleased.classList.add('container');
@@ -569,9 +569,9 @@
                     cntUnknown.classList.add('container');
 
                     // Create title
-                    var hdrReleased = HTMLElement;
-                    var hdrComing = HTMLElement;
-                    var hdrUnknown = HTMLElement;
+                    var hdrReleased;
+                    var hdrComing;
+                    var hdrUnknown;
 
                     hdrReleased = document.createElement('h1');
                     hdrReleased.classList.add('title');
@@ -793,6 +793,9 @@
      * @param {string} query The search string
      */
     function search(query) {
+        // Get the already added movies
+        var movies = lstMovies.getElementsByTagName('h6');
+
         // Clear result list
         while (lstResults.firstChild) {
             lstResults.removeChild(lstResults.firstChild);
@@ -862,18 +865,33 @@
                         resp.results[i].overview;
                     content.appendChild(title);
 
-                    // Create the add button
+                    var found = Array.from(movies).find(function (movie) {
+                        return movie.innerHTML === this.original_title;
+                    }, resp.results[i]);
+
+                    // Check if movie is already added in watchlist
+                    if (found) {
+                        // Create the add button
+                        button = document.createElement("button");
+                        button.classList.add('button', 'is-info', 'is-outlined');
+                        button.innerText = 'Already added to watchlist';
+                        button.setAttribute("disabled", "");
+                    } else {
+                        // Create the add button
+                        button = document.createElement("button");
+                        button.classList.add('button', 'is-success');
+                        button.innerText = 'Add to watchlist';
+                        button.dataset.image = resp.results[i].poster_path;
+                        button.dataset.title = resp.results[i].original_title;
+                        button.dataset.overview = resp.results[i].overview;
+                        if (resp.results[i].release_date === '')
+                            continue;
+                        button.dataset.year = fecha.format(fecha.parse(resp.results[i].release_date, 'YYYY-MM-DD'), 'YYYY');
+                    }
+
+                    // Create the media right div
                     mediaRight = document.createElement("div");
                     mediaRight.classList.add('media-right');
-                    button = document.createElement("button");
-                    button.classList.add('button', 'is-success');
-                    button.innerText = 'Add to watchlist';
-                    button.dataset.image = resp.results[i].poster_path;
-                    button.dataset.title = resp.results[i].original_title;
-                    button.dataset.overview = resp.results[i].overview;
-                    if (resp.results[i].release_date == '')
-                        continue;
-                    button.dataset.year = fecha.format(fecha.parse(resp.results[i].release_date, 'YYYY-MM-DD'), 'YYYY');
                     mediaRight.appendChild(button);
 
                     // Add all to media div

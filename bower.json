@@ -27,7 +27,7 @@
             "main": "css/bulma.css"
         },
         "javascript-auto-complete": {
-            "main": "auto-complete.min.js"
+            "main": ["auto-complete.min.js", "auto-complete.css"]
         }
     }
 }

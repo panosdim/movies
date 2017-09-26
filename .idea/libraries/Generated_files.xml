@@ -7,6 +7,18 @@
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/js/subir.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/bower_components/auto-complete.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/bower_components/fecha.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/bower_components/auto-complete.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/bower_components/fecha.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/fecha.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/auto-complete.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/auto-complete.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/fecha.min.min.js" />
+      <root url="file://$PROJECT_DIR$/deploy.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/fecha.min.min.js" />
+      <root url="file://$PROJECT_DIR$/dist/auto-complete.min.min.js" />
+      <root url="file://$PROJECT_DIR$/deploy.min.js" />
       <root url="file://$PROJECT_DIR$/js/mw.min.js" />
     </CLASSES>
     <SOURCES />

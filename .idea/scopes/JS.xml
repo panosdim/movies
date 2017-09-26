@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="JS" pattern="file[movies]:js//*&amp;&amp;!file:js/*.min.js" />
+</component>
