@@ -1,0 +1,33 @@
+{
+  "name": "Movies Watchlist",
+  "homepage": "https://github.com/panosdim/movies",
+  "authors": [
+    "Panagiotis Dimopoulos <panosdim@gmail.com>"
+  ],
+  "description": "Track movies release dates on DVD",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "fecha": "^2.3.1",
+    "javascript-auto-complete": "pixabay-autocompleted#^1.0.4",
+    "bulma": "^0.5.2"
+  },
+  "overrides": {
+        "fecha": {
+            "main": "fecha.min.js"
+        },
+        "bulma": {
+            "main": "css/bulma.css"
+        },
+        "javascript-auto-complete": {
+            "main": "auto-complete.min.js"
+        }
+    }
+}

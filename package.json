@@ -1,0 +1,25 @@
+{
+  "name": "movies",
+  "version": "1.0.0",
+  "description": "Watch list for movies",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "node deploy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panosdim/movies.git"
+  },
+  "author": "Panagiotis Dimopoulos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/panosdim/movies/issues"
+  },
+  "homepage": "https://github.com/panosdim/movies#readme",
+  "devDependencies": {
+    "bower": "^1.8.2",
+    "main-bower-files": "^2.13.1",
+    "rimraf": "^2.6.2"
+  }
+}
