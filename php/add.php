@@ -46,9 +46,10 @@ if ($image == 'null') {
 }
 
 $term = str_replace(" ", "+", html_entity_decode($title, ENT_QUOTES | ENT_HTML5));
+$term = $term . "+" . $year;
 
 // Get search results
-$results = file_get_contents("http://videoeta.com/search/?s={$term}", False, $context);
+$results = file_get_contents("http://videoeta.com/search?keywords={$term}");
 
 $dom = new DOMDocument();
 libxml_use_internal_errors(true);
@@ -56,20 +57,18 @@ $dom->loadHTML($results);
 $xpath = new DOMXpath($dom);
 
 // Find movie URL from search results
-$elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[. = {$year}]");
-if ($elements->length == 0)
-    $elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a");
+$elements = $xpath->query("//div[@class=\"caption\"]/p[@class=\"flex-text text-muted\"]/a[2]");
 if ($elements->length != 0) {
     $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
 
     // Fetch movie data
-    $results = file_get_contents($movie_url, False, $context);
+    $results = file_get_contents($movie_url);
 
     $dom->loadHTML($results);
     $xpath = new DOMXpath($dom);
 
     // Get release date
-    $elements = $xpath->query("//tr[@class='blu-ray' or @class='dvd']/td[@class='value']/a[1]");
+    $elements = $xpath->query("//td[.=\"Now Available\"]/preceding-sibling::td/a");
     if ($elements->length != 0) {
         foreach ($elements as $date) {
             if (is_null($rel_date)) {
@@ -81,7 +80,27 @@ if ($elements->length != 0) {
                 }
             }
         }
+    } else {
+        $elements = $xpath->query("//td[.=\"Alert Me\"]/preceding-sibling::td/a");
+        if ($elements->length != 0) {
+            foreach ($elements as $date) {
+                if (is_null($rel_date)) {
+                    $rel_date = new DateTime($date->nodeValue);
+                } else {
+                    $tmp_date = new DateTime($date->nodeValue);
+                    if ($rel_date->getTimestamp() > $tmp_date->getTimestamp()) {
+                        $rel_date = $tmp_date;
+                    }
+                }
+            }
+        }
     }
+} else {
+    echo json_encode([
+        "status"  => "error",
+        "message" => "Movie was not found in VideoETA.",
+    ]);
+    exit();
 }
 
 if (!is_null($rel_date)) {

@@ -43,13 +43,13 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
 
             // Fetch movie data
             if (!is_null($item['url'])) {
-                $results = file_get_contents($item['url'], False, $context);
+                $results = file_get_contents($item['url']);
 
                 $dom->loadHTML($results);
                 $xpath = new DOMXpath($dom);
 
                 // Get release date
-                $elements = $xpath->query("//tr[@class='blu-ray' or @class='dvd']/td[@class='value']/a[1]");
+                $elements = $xpath->query("//td[.=\"Now Available\"]/preceding-sibling::td/a");
                 if ($elements->length != 0) {
                     foreach ($elements as $date) {
                         if (is_null($rel_date)) {
@@ -61,31 +61,8 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
                             }
                         }
                     }
-                }
-            } else {
-                $term = str_replace(" ", "+", html_entity_decode($item['title'], ENT_QUOTES | ENT_HTML5));
-
-                // Get search results
-                $results = file_get_contents("http://videoeta.com/search/?s={$term}", False, $context);
-
-                $dom = new DOMDocument();
-                libxml_use_internal_errors(true);
-                $dom->loadHTML($results);
-                $xpath = new DOMXpath($dom);
-
-                // Find movie URL from search results
-                $elements = $xpath->query("//h4[contains(text(),'Exact Title Matches: ')]/following-sibling::a[1]");
-                if ($elements->length != 0) {
-                    $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
-
-                    // Fetch movie data
-                    $results = file_get_contents($movie_url, False, $context);
-
-                    $dom->loadHTML($results);
-                    $xpath = new DOMXpath($dom);
-
-                    // Get release date
-                    $elements = $xpath->query("//tr[@class='blu-ray' or @class='dvd']/td[@class='value']/a[1]");
+                } else {
+                    $elements = $xpath->query("//td[.=\"Alert Me\"]/preceding-sibling::td/a");
                     if ($elements->length != 0) {
                         foreach ($elements as $date) {
                             if (is_null($rel_date)) {
@@ -98,23 +75,6 @@ if ($stmt->execute([$_SESSION['userId'], '0000-00-00'])) {
                             }
                         }
                     }
-                }
-            }
-
-            if (!is_null($rel_date)) {
-                $release_date = $rel_date->format('Y-m-d');
-
-                // Update movie in the table
-                if (!is_null($item['url'])) {
-                    $stmt = $db->prepare(
-                        'UPDATE `watchlist` SET release_date=? WHERE id=?'
-                    );
-                    $stmt->execute([$release_date, $item['id']]);
-                } else {
-                    $stmt = $db->prepare(
-                        'UPDATE `watchlist` SET release_date=?, url=? WHERE id=?'
-                    );
-                    $stmt->execute([$release_date, $movie_url, $item['id']]);
                 }
             }
         }

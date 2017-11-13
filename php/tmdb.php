@@ -1,6 +1,5 @@
 <?php
 // Stream options
-// TODO: Remove in production server the proxy settings
 $opts = [
     'http' => [
         'request_fulluri' => true
