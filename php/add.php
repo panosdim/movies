@@ -19,88 +19,33 @@ $title = $overview = $image = $rel_date = $movie_url = $year = null;
 $release_date = "0000-00-00";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $id = filter_input(INPUT_POST, "id", FILTER_SANITIZE_NUMBER_INT);
     $title = filter_input(INPUT_POST, "title", FILTER_SANITIZE_STRING);
     $overview = filter_input(INPUT_POST, "overview", FILTER_SANITIZE_STRING);
     $image = filter_input(INPUT_POST, "image", FILTER_SANITIZE_STRING);
-    $year = filter_input(INPUT_POST, "year", FILTER_SANITIZE_STRING);
-}
-
-// Check if movie already exists
-$stmt = $db->prepare(
-    'SELECT title FROM watchlist WHERE title = ?'
-);
-if ($stmt->execute([$title])) {
-    $query = $stmt->fetch();
-
-    if ($query !== false) {
-        echo json_encode([
-            "status"  => "info",
-            "message" => "Movie already exist in watchlist.",
-        ]);
-        exit();
-    }
 }
 
 if ($image == 'null') {
     $image = null;
 }
 
-$term = str_replace(" ", "+", html_entity_decode($title, ENT_QUOTES | ENT_HTML5));
-$term = $term . "+" . $year;
-
-// Get search results
-$results = file_get_contents("http://videoeta.com/search?keywords={$term}");
-
-$dom = new DOMDocument();
-libxml_use_internal_errors(true);
-$dom->loadHTML($results);
-$xpath = new DOMXpath($dom);
-
-// Find movie URL from search results
-$elements = $xpath->query("//div[@class=\"caption\"]/p[@class=\"flex-text text-muted\"]/a[2]");
-if ($elements->length != 0) {
-    $movie_url = "http://videoeta.com" . $elements->item(0)->getAttribute('href');
-
-    // Fetch movie data
-    $results = file_get_contents($movie_url);
-
-    $dom->loadHTML($results);
-    $xpath = new DOMXpath($dom);
-
-    // Get release date
-    $elements = $xpath->query("//td[.=\"Now Available\"]/preceding-sibling::td/a");
-    if ($elements->length != 0) {
-        foreach ($elements as $date) {
-            if (is_null($rel_date)) {
-                $rel_date = new DateTime($date->nodeValue);
-            } else {
-                $tmp_date = new DateTime($date->nodeValue);
-                if ($rel_date->getTimestamp() > $tmp_date->getTimestamp()) {
-                    $rel_date = $tmp_date;
-                }
-            }
-        }
-    } else {
-        $elements = $xpath->query("//td[.=\"Alert Me\"]/preceding-sibling::td/a");
-        if ($elements->length != 0) {
-            foreach ($elements as $date) {
+// Get Release Dates
+$data = json_decode(file_get_contents("https://api.themoviedb.org/3/movie/${id}/release_dates?api_key={$key}", False, $context), true);
+foreach ($data['results'] as $item) {
+    if ($item['iso_3166_1'] == 'US') {
+        foreach ($item['release_dates'] as $rd) {
+            if ($rd['type'] > 3) {
+                $date = new DateTime($rd['release_date']);
                 if (is_null($rel_date)) {
-                    $rel_date = new DateTime($date->nodeValue);
+                    $rel_date = clone $date;
                 } else {
-                    $tmp_date = new DateTime($date->nodeValue);
-                    if ($rel_date->getTimestamp() > $tmp_date->getTimestamp()) {
-                        $rel_date = $tmp_date;
+                    if ($rel_date > $date) {
+                        $rel_date = clone $date;
                     }
                 }
             }
         }
     }
-} else {
-    echo json_encode([
-        "status"  => "error",
-        "message" => "Movie was not found in VideoETA.",
-    ]);
-    exit();
 }
 
 if (!is_null($rel_date)) {
@@ -109,10 +54,10 @@ if (!is_null($rel_date)) {
 
 // Insert movie in the table
 $stmt = $db->prepare(
-    'INSERT INTO `watchlist` (`user_id`, `title`, `overview`, `release_date`, `image`, `url`) VALUES (?, ?, ?, ?, ?, ?)'
+    'INSERT INTO `watchlist` (`user_id`, `title`, `overview`, `release_date`, `image`, `movie_id`) VALUES (?, ?, ?, ?, ?, ?)'
 );
 
-if ($stmt->execute([$_SESSION['userId'], $title, $overview, $release_date, $image, $movie_url])) {
+if ($stmt->execute([$_SESSION['userId'], $title, $overview, $release_date, $image, $id])) {
     echo json_encode([
         "status"  => "success",
         "message" => "Movie was added successfully.",

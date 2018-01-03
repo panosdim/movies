@@ -1,6 +1,5 @@
+"use strict";
 (function() {
-    "use strict";
-
     // ----------------------------------------------
     // Variables Declarations
     //-----------------------------------------------
@@ -303,7 +302,7 @@
             data.append('title', e.target.dataset.title);
             data.append('overview', e.target.dataset.overview);
             data.append('image', e.target.dataset.image);
-            data.append('year', e.target.dataset.year);
+            data.append('id', e.target.dataset.id);
 
             ajax.open('POST', 'php/add.php', true);
             ajax.send(data);
@@ -374,34 +373,6 @@
     btnTop.addEventListener('click', function() {
         document.body.scrollTop = 0; // For Chrome, Safari and Opera
         document.documentElement.scrollTop = 0; // For IE and Firefox
-    });
-
-    // Hide or show movies sections
-    document.addEventListener('click', function(e) {
-        var elm = e.target;
-        if (elm && elm.tagName.toLowerCase() === 'i' && elm.hasAttribute('caret')) {
-            var container = elm.parentNode.parentNode.parentNode;
-            if (container && container.tagName.toLowerCase() === 'div' && container.classList.contains('container')) {
-                var movies = container.querySelectorAll('div.columns');
-            }
-            var i = 0, len = movies.length;
-
-            if (elm.classList.contains('fa-caret-down')) {
-                // Hide movies
-                for (; i < len; i++) {
-                    movies[i].style.display = 'none';
-                }
-                elm.classList.remove('fa-caret-down');
-                elm.classList.add('fa-caret-right');
-            } else {
-                // Show movies
-                for (; i < len; i++) {
-                    movies[i].style.display = '';
-                }
-                elm.classList.remove('fa-caret-right');
-                elm.classList.add('fa-caret-down');
-            }
-        }
     });
 
     // ----------------------------------------------
@@ -573,15 +544,17 @@
                     var hdrComing;
                     var hdrUnknown;
 
-                    hdrReleased = document.createElement('h1');
-                    hdrReleased.classList.add('title');
-                    hdrReleased.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Released on DVD';
-                    hdrComing = document.createElement('h1');
-                    hdrComing.classList.add('title');
-                    hdrComing.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Coming Soon';
-                    hdrUnknown = document.createElement('h1');
-                    hdrUnknown.classList.add('title');
-                    hdrUnknown.innerHTML = '<span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Unknown Release Date';
+                    hdrReleased = document.createElement('a');
+                    hdrReleased.innerHTML = '<h1 class="title"><span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Released on DVD</h1>';
+                    hdrComing = document.createElement('a');
+                    hdrComing.innerHTML = '<h1 class="title"><span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Coming Soon</h1>';
+                    hdrUnknown = document.createElement('a');
+                    hdrUnknown.innerHTML = '<h1 class="title"><span class="icon is-medium"><i caret class="fa fa-caret-down"></i></span> Unknown Release Date</h1>';
+
+                    // Add event listeners for click in header titles
+                    hdrReleased.addEventListener('click', toggleSection);
+                    hdrComing.addEventListener('click', toggleSection);
+                    hdrUnknown.addEventListener('click', toggleSection);
 
                     // Add title to container
                     cntReleased.appendChild(hdrReleased);
@@ -725,9 +698,9 @@
                     }
 
                     // Update header titles
-                    hdrReleased.innerHTML = hdrReleased.innerHTML + ' (' + nrReleased + ')';
-                    hdrComing.innerHTML = hdrComing.innerHTML + ' (' + nrComing + ')';
-                    hdrUnknown.innerHTML = hdrUnknown.innerHTML + ' (' + nrUnknown + ')';
+                    hdrReleased.querySelector('h1').innerHTML = hdrReleased.querySelector('h1').innerHTML + ' (' + nrReleased + ')';
+                    hdrComing.querySelector('h1').innerHTML = hdrComing.querySelector('h1').innerHTML + ' (' + nrComing + ')';
+                    hdrUnknown.querySelector('h1').innerHTML = hdrUnknown.querySelector('h1').innerHTML + ' (' + nrUnknown + ')';
 
                     // Add Containers to sections
                     sctReleased.appendChild(cntReleased);
@@ -740,7 +713,7 @@
                     lstMovies.appendChild(sctUnknown);
 
                     // Hide section with Unknown Release Date
-                    hdrUnknown.getElementsByTagName('i')[0].click();
+                    hdrUnknown.click();
                 } else {
                     displayMessage(resp);
                 }
@@ -865,7 +838,7 @@
                         resp.results[i].overview;
                     content.appendChild(title);
 
-                    var found = Array.from(movies).find(function (movie) {
+                    var found = Array.from(movies).find(function(movie) {
                         return movie.innerHTML === this.original_title;
                     }, resp.results[i]);
 
@@ -884,9 +857,7 @@
                         button.dataset.image = resp.results[i].poster_path;
                         button.dataset.title = resp.results[i].original_title;
                         button.dataset.overview = resp.results[i].overview;
-                        if (resp.results[i].release_date === '')
-                            continue;
-                        button.dataset.year = fecha.format(fecha.parse(resp.results[i].release_date, 'YYYY-MM-DD'), 'YYYY');
+                        button.dataset.id = resp.results[i].id;
                     }
 
                     // Create the media right div
@@ -916,6 +887,34 @@
             // Remove loading class from search button
             btnSearch.classList.remove('is-loading');
         };
+    }
+
+    /**
+     * Hide or show the sections
+     */
+    function toggleSection(e) {
+        var container = e.target.closest('div.container');
+        if (container) {
+            var movies = container.querySelectorAll('div.columns');
+        }
+        var i = 0, len = movies.length;
+        var elm = container.querySelector('i');
+
+        if (elm.classList.contains('fa-caret-down')) {
+            // Hide movies
+            for (; i < len; i++) {
+                movies[i].style.display = 'none';
+            }
+            elm.classList.remove('fa-caret-down');
+            elm.classList.add('fa-caret-right');
+        } else {
+            // Show movies
+            for (; i < len; i++) {
+                movies[i].style.display = '';
+            }
+            elm.classList.remove('fa-caret-right');
+            elm.classList.add('fa-caret-down');
+        }
     }
 
     /**
